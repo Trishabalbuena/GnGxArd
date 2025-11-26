@@ -24,9 +24,8 @@ public class TermsActivity extends AppCompatActivity {
         // Set up the click listener for the AGREE button
         agreeBtn.setOnClickListener(v -> {
             if (agreeCheckbox.isChecked()) {
-                // If the user agrees, go directly to the MainActivity.
-                // This is the FIX that lets you see the new home screen.
-                Intent intent = new Intent(TermsActivity.this, MainActivity.class);
+                // If the user agrees, go to the LoginActivity.
+                Intent intent = new Intent(TermsActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish(); // Close this screen so the user can't come back to it
             } else {
