@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "489894037626",
+    "project_id": "gngsecurity-94f27",
+    "storage_bucket": "gngsecurity-94f27.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489894037626:android:b0563150a05e2e77af13c3",
+        "android_client_info": {
+          "package_name": "com.gng.security"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "489894037626-f5qijhm0353cnrcg0ej62tiu13allsv5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3KdeZR33zAz89zRwCBsKnrp6v2gO1TyU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "489894037626-f5qijhm0353cnrcg0ej62tiu13allsv5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -13,42 +14,49 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+// NOTE: All Firebase imports are kept for easy re-enabling
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.firebase.auth.FirebaseAuth;
+
 public class LoginActivity extends AppCompatActivity {
     private Button loginBtn, registerBtn;
-    private ImageButton googleLogin, facebookLogin;
+    private ImageButton googleLogin;
+    // private FirebaseAuth mAuth; // Temporarily disabled
+    // private GoogleSignInClient mGoogleSignInClient; // Temporarily disabled
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Check if user is already logged in
+        // --- Start of Temporary Bypass ---
+        // Check if user is already "logged in" using SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("GnGSecurityPrefs", MODE_PRIVATE);
         if (sharedPreferences.getBoolean("isLoggedIn", false)) {
-            // User is already logged in, go straight to MainActivity
             startActivity(new Intent(this, MainActivity.class));
             finish();
-            return; // Important to prevent the rest of onCreate from running
+            return;
         }
+        // --- End of Temporary Bypass ---
 
         setContentView(R.layout.activity_login);
 
         initializeViews();
         setupClickListeners();
+
+        // mAuth = FirebaseAuth.getInstance(); // Temporarily disabled
+        // setupGoogleSignIn(); // Temporarily disabled
     }
 
     private void initializeViews() {
         loginBtn = findViewById(R.id.loginBtn);
         registerBtn = findViewById(R.id.registerBtn);
         googleLogin = findViewById(R.id.googleLogin);
-        facebookLogin = findViewById(R.id.facebookLogin);
     }
 
     private void setupClickListeners() {
         loginBtn.setOnClickListener(v -> showLoginDialog());
         registerBtn.setOnClickListener(v -> showRegisterDialog());
-
         googleLogin.setOnClickListener(v -> signInWithGoogle());
-        facebookLogin.setOnClickListener(v -> signInWithFacebook());
     }
 
     private void showLoginDialog() {
@@ -61,8 +69,8 @@ public class LoginActivity extends AppCompatActivity {
 
         builder.setView(dialogView);
         builder.setPositiveButton("Login", (dialog, which) -> {
-            String email = emailInput.getText().toString();
-            String password = passwordInput.getText().toString();
+            String email = emailInput.getText().toString().trim();
+            String password = passwordInput.getText().toString().trim();
             performLogin(email, password);
         });
         builder.setNegativeButton("Cancel", null);
@@ -81,10 +89,10 @@ public class LoginActivity extends AppCompatActivity {
 
         builder.setView(dialogView);
         builder.setPositiveButton("Register", (dialog, which) -> {
-            String fullName = fullNameInput.getText().toString();
-            String email = emailInput.getText().toString();
-            String password = passwordInput.getText().toString();
-            String confirmPassword = confirmPasswordInput.getText().toString();
+            String fullName = fullNameInput.getText().toString().trim();
+            String email = emailInput.getText().toString().trim();
+            String password = passwordInput.getText().toString().trim();
+            String confirmPassword = confirmPasswordInput.getText().toString().trim();
             performRegistration(fullName, email, password, confirmPassword);
         });
         builder.setNegativeButton("Cancel", null);
@@ -92,56 +100,77 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void performLogin(String email, String password) {
-        // TODO: Implement actual login logic
+        // --- Start of Temporary Bypass ---
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Save the login state and signal that the notification dialog should be shown
+        // Save the dummy login state
         SharedPreferences sharedPreferences = getSharedPreferences("GnGSecurityPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("isLoggedIn", true);
-        editor.putBoolean("isNewUser", true); // Setting this to true will trigger the dialog
         editor.apply();
 
         // Proceed to main activity
         startActivity(new Intent(this, MainActivity.class));
         finish();
+        // --- End of Temporary Bypass ---
+
+        /* --- Original Firebase Logic ---
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(...);
+        */
     }
 
     private void performRegistration(String fullName, String email, String password, String confirmPassword) {
-        // TODO: Implement actual registration logic
+        // --- Start of Temporary Bypass ---
         if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!password.equals(confirmPassword)) {
-            Toast.makeText(this, "Passwords don't match", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Save the login state and mark as new user
+        // Save the dummy login state
         SharedPreferences sharedPreferences = getSharedPreferences("GnGSecurityPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("isLoggedIn", true);
-        editor.putBoolean("isNewUser", true);
         editor.apply();
 
         // Proceed to main activity
         Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show();
         startActivity(new Intent(this, MainActivity.class));
         finish();
+        // --- End of Temporary Bypass ---
+
+        /* --- Original Firebase Logic ---
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(...);
+        */
     }
 
     private void signInWithGoogle() {
-        // TODO: Implement Google Sign-In
-        Toast.makeText(this, "Google Sign-In will be implemented", Toast.LENGTH_SHORT).show();
-    }
+        // --- Start of Temporary Bypass ---
+        // Save the dummy login state
+        SharedPreferences sharedPreferences = getSharedPreferences("GnGSecurityPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isLoggedIn", true);
+        editor.apply();
 
-    private void signInWithFacebook() {
-        // TODO: Implement Facebook Sign-In
-        Toast.makeText(this, "Facebook Sign-In will be implemented", Toast.LENGTH_SHORT).show();
+        // Proceed to main activity
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+        // --- End of Temporary Bypass ---
+
+        /* --- Original Firebase Logic ---
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+        */
     }
+    
+    /* --- Original Firebase methods are left below for easy re-enabling ---
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) { ... }
+
+    private void firebaseAuthWithGoogle(String idToken) { ... }
+    
+    private void setupGoogleSignIn() { ... }
+    */
 }

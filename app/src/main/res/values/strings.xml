@@ -3,5 +3,6 @@
     <string name="title_home">Home</string>
     <string name="title_profile">Profile</string>
     <string name="title_settings">Settings</string>
-    <string name="title_events">Events</string> <!-- This is a temporary fix to solve a build error -->
+    <string name="title_events">Events</string>
+    <string name="default_web_client_id">489894037626-f5qijhm0353cnrcg0ej62tiu13allsv5.apps.googleusercontent.com</string>
 </resources>

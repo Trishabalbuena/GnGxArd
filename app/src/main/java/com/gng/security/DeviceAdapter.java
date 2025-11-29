@@ -41,6 +41,12 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
                 bottomSheet.show(((AppCompatActivity) v.getContext()).getSupportFragmentManager(), bottomSheet.getTag());
             }
         });
+
+        holder.disarmButton.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDisarmClicked(deviceName);
+            }
+        });
     }
 
     @Override
@@ -54,11 +60,13 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
     static class DeviceViewHolder extends RecyclerView.ViewHolder {
         TextView deviceName;
         ImageButton deviceMenu;
+        ImageButton disarmButton;
 
         public DeviceViewHolder(@NonNull View itemView) {
             super(itemView);
             deviceName = itemView.findViewById(R.id.device_name);
             deviceMenu = itemView.findViewById(R.id.device_menu);
+            disarmButton = itemView.findViewById(R.id.disarm_button);
         }
     }
 }

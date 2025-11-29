@@ -39,7 +39,6 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Always inflate the single, unified layout
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -47,22 +46,18 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Find all views
         addDeviceCard = view.findViewById(R.id.addDeviceCard);
         devicesRecyclerView = view.findViewById(R.id.devices_recycler_view);
         addDeviceFab = view.findViewById(R.id.add_device_fab);
 
-        // Initialize list and adapter
         deviceList = getDeviceList();
         adapter = new DeviceAdapter(deviceList, this);
 
-        Context context = getContext();
-        if (context != null) {
-            devicesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+        if (getContext() != null) {
+            devicesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             devicesRecyclerView.setAdapter(adapter);
         }
 
-        // Set click listeners
         if (addDeviceCard != null) {
             addDeviceCard.setOnClickListener(v -> showAddDeviceDialog());
         }
@@ -70,13 +65,43 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
             addDeviceFab.setOnClickListener(v -> showAddDeviceDialog());
         }
 
-        // Set initial visibility
         updateUIVisibility();
+    }
+
+    @Override
+    public void onDisarmClicked(String deviceName) {
+        if (getContext() == null || !isAdded()) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_pincode, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        EditText pincodeInput = dialogView.findViewById(R.id.pin_code_input);
+        Button disarmButton = dialogView.findViewById(R.id.disarm_button);
+
+        disarmButton.setOnClickListener(v -> {
+            String enteredPin = pincodeInput.getText().toString();
+            if (isPincodeCorrect(deviceName, enteredPin)) {
+                Toast.makeText(getContext(), deviceName + " disarmed!", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            } else {
+                Toast.makeText(getContext(), "Incorrect PIN", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private boolean isPincodeCorrect(String deviceName, String enteredPin) {
+        if (getContext() == null) return false;
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
+        String savedPin = sharedPreferences.getString("pincode_" + deviceName, null);
+        return enteredPin.equals(savedPin);
     }
 
     private void updateUIVisibility() {
         if (deviceList == null) return;
-
         boolean isEmpty = deviceList.isEmpty();
         if (addDeviceCard != null) {
             addDeviceCard.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
@@ -90,11 +115,9 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
     }
 
     private void showAddDeviceDialog() {
-        final Context context = getContext();
-        if (context == null || !isAdded()) return;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_device, null);
+        if (getContext() == null || !isAdded()) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_device, null);
         builder.setView(dialogView);
 
         EditText deviceCodeInput = dialogView.findViewById(R.id.deviceCodeInput);
@@ -108,26 +131,23 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
                 dialog.dismiss();
                 showRenameDeviceDialog(deviceCode);
             } else {
-                Toast.makeText(context, "Please enter a device code", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Please enter a device code", Toast.LENGTH_SHORT).show();
             }
         });
-
         dialog.show();
     }
 
     private void showRenameDeviceDialog(String deviceCode) {
-        final Context context = getContext();
-        if (context == null || !isAdded()) return;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        if (getContext() == null || !isAdded()) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Rename Device");
 
-        EditText renameInput = new EditText(context);
+        EditText renameInput = new EditText(getContext());
         renameInput.setHint("Enter new device name");
         builder.setView(renameInput);
 
         builder.setPositiveButton("Save", (dialog, which) -> {
-            String newName = renameInput.getText().toString();
+            String newName = renameInput.getText().toString().trim();
             if (!newName.isEmpty()) {
                 if (deviceList == null) {
                     deviceList = new ArrayList<>();
@@ -139,9 +159,9 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
                 }
                 updateUIVisibility();
                 dialog.dismiss();
-                Toast.makeText(context, "Device added", Toast.LENGTH_SHORT).show();
+                showSetPincodeDialog(newName);
             } else {
-                Toast.makeText(context, "Please enter a name", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Please enter a name", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -149,11 +169,54 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
         builder.show();
     }
 
+    private void showSetPincodeDialog(String deviceName) {
+        if (getContext() == null || !isAdded()) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_set_pincode, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        EditText createPincode = dialogView.findViewById(R.id.create_pincode_input);
+        EditText confirmPincode = dialogView.findViewById(R.id.confirm_pincode_input);
+        Button saveButton = dialogView.findViewById(R.id.save_button);
+        Button cancelButton = dialogView.findViewById(R.id.cancel_button);
+
+        saveButton.setOnClickListener(v -> {
+            String pincode = createPincode.getText().toString();
+            String confirm = confirmPincode.getText().toString();
+
+            if (pincode.length() != 4) {
+                Toast.makeText(getContext(), "Pincode must be 4 digits", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!pincode.equals(confirm)) {
+                Toast.makeText(getContext(), "Pincodes do not match", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            savePincode(deviceName, pincode);
+            Toast.makeText(getContext(), "Device \"" + deviceName + "\" added successfully!", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+
+    private void savePincode(String deviceName, String pincode) {
+        if (getContext() == null) return;
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("pincode_" + deviceName, pincode);
+        editor.apply();
+    }
 
     private List<String> getDeviceList() {
-        Context context = getContext();
-        if (context == null) return new ArrayList<>();
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
+        if (getContext() == null) return new ArrayList<>();
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
         String json = sharedPreferences.getString("deviceList", null);
         if (json == null) {
             return new ArrayList<>();
@@ -164,10 +227,9 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
             if (list == null) {
                 throw new JsonSyntaxException("Parsed list is null");
             }
-            list.removeAll(Collections.singleton(null)); // Clean up any null entries from corruption
+            list.removeAll(Collections.singleton(null));
             return list;
         } catch (Exception e) {
-            // Data is corrupted. Clear it and start fresh.
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.remove("deviceList");
             editor.apply();
@@ -176,9 +238,8 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
     }
 
     private void saveDeviceList(List<String> list) {
-        Context context = getContext();
-        if (context == null) return;
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
+        if (getContext() == null) return;
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         String json = new Gson().toJson(list);
         editor.putString("deviceList", json);
@@ -192,6 +253,12 @@ public class HomeFragment extends Fragment implements DeviceInteractionListener 
         if (index != -1) {
             deviceList.remove(index);
             saveDeviceList(deviceList);
+            // Also remove the associated pincode
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.remove("pincode_" + deviceName);
+            editor.apply();
+            
             if (adapter != null) {
                 adapter.notifyItemRemoved(index);
             }
