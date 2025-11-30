@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class LoginActivity extends AppCompatActivity {
     private Button loginBtn, registerBtn;
@@ -170,6 +171,15 @@ public class LoginActivity extends AppCompatActivity {
                         Log.d(TAG, "createUserWithEmail:success");
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(fullName)
+                                    .build();
+                            user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
+                                if(profileTask.isSuccessful()){
+                                    Log.d(TAG, "User profile updated.");
+                                }
+                            });
+
                             user.sendEmailVerification()
                                     .addOnCompleteListener(verificationTask -> {
                                         if (verificationTask.isSuccessful()) {
@@ -204,7 +214,7 @@ public class LoginActivity extends AppCompatActivity {
                 Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
-                Log.w(TAG, "Google Sign In failed", e);
+                Log.w(TAG, "Google sign in failed", e);
                 Toast.makeText(this, "Google Sign In failed: " + e.getStatusCode(), Toast.LENGTH_LONG).show();
             }
         }

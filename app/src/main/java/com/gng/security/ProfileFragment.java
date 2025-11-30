@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
+    private TextView nameTextView, emailTextView;
 
     @Nullable
     @Override
@@ -49,11 +52,38 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        nameTextView = view.findViewById(R.id.name);
+        emailTextView = view.findViewById(R.id.email);
+
         Button logoutButton = view.findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(v -> logoutUser());
 
         Button deleteAccountButton = view.findViewById(R.id.deleteAccountButton);
         deleteAccountButton.setOnClickListener(v -> showDeleteAccountConfirmationDialog());
+
+        loadUserProfile();
+    }
+
+    private void loadUserProfile(){
+        FirebaseUser user = mAuth.getCurrentUser();
+        if(user != null){
+            // Set the email address
+            emailTextView.setText(user.getEmail());
+
+            // Set the name based on the rules
+            String displayName = user.getDisplayName();
+            if(!TextUtils.isEmpty(displayName)){
+                // If user has a display name (from registration or Google), use it
+                nameTextView.setText(displayName);
+            } else if (user.getEmail() != null && user.getEmail().contains("@")){
+                // If no display name, derive it from the email (for Google sign-in fallback)
+                String emailName = user.getEmail().split("@")[0];
+                nameTextView.setText(emailName);
+            } else {
+                // Fallback if no information is available
+                nameTextView.setText("User");
+            }
+        }
     }
 
     private void logoutUser() {
