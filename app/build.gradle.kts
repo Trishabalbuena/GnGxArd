@@ -36,6 +36,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-storage") // Added for photo uploads
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -44,10 +45,10 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.0")
     implementation("androidx.cardview:cardview:1.0.0")
 
-    // For image loading (for intruder photos)
+    // For image loading
     implementation("com.github.bumptech.glide:glide:4.15.1")
 
-    // For social login (optional)
+    // For social login
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
     // Circle ImageView
