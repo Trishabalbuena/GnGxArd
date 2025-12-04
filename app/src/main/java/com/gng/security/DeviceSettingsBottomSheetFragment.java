@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -62,6 +63,20 @@ public class DeviceSettingsBottomSheetFragment extends BottomSheetDialogFragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        SwitchMaterial notificationsSwitch = view.findViewById(R.id.notifications_switch);
+        
+        // Load saved state for this device
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
+        boolean isEnabled = sharedPreferences.getBoolean("notification_enabled_" + deviceName, true); // Default to true
+        notificationsSwitch.setChecked(isEnabled);
+
+        // Save state on change
+        notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("notification_enabled_" + deviceName, isChecked);
+            editor.apply();
+        });
 
         Button disconnectButton = view.findViewById(R.id.disconnect_button);
         disconnectButton.setOnClickListener(v -> {

@@ -1,11 +1,11 @@
 package com.gng.security;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,20 +25,20 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SwitchMaterial enableNotificationsSwitch = view.findViewById(R.id.enable_notifications_switch);
-        TextView defaultAlarmSound = view.findViewById(R.id.default_alarm_sound);
-        TextView pinCodeSettings = view.findViewById(R.id.pin_code_settings);
+        if (getContext() == null) return;
 
-        enableNotificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // Handle switch state change
-        });
+        SwitchMaterial notificationsSwitch = view.findViewById(R.id.enable_notifications_switch);
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("GnGSecurityPrefs", Context.MODE_PRIVATE);
 
-        defaultAlarmSound.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Default Alarm Sound clicked", Toast.LENGTH_SHORT).show();
-        });
+        // Load the saved state for the master switch
+        boolean isMasterEnabled = sharedPreferences.getBoolean("master_notification_enabled", true); // Default to true
+        notificationsSwitch.setChecked(isMasterEnabled);
 
-        pinCodeSettings.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "PIN Code Settings clicked", Toast.LENGTH_SHORT).show();
+        // Save state on change
+        notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("master_notification_enabled", isChecked);
+            editor.apply();
         });
     }
 }
